@@ -33,22 +33,37 @@ address:
 
 using namespace std;
 
+string ReadJSON(string fileName);
+void PrintOutput(vector<pair<string, string>> &result);
+
 int main()
 {
-    ifstream file("example.json");
+
+    string json = ReadJSON("example.json");
+    Parser parser(json);
+    vector<pair<string, string>> result = parser.parse();
+
+    PrintOutput(result);
+
+    return 0;
+}
+
+string ReadJSON(string fileName)
+{
+    ifstream file(fileName);
     if (!file)
     {
         cerr << "Error: Could not open data.json" << endl;
-        return 1;
+        return "";
     }
 
     stringstream buffer;
     buffer << file.rdbuf();
-    string json = buffer.str();
+    return buffer.str();
+}
 
-    Parser parser(json);
-    vector<pair<string, string>> result = parser.parse();
-
+void PrintOutput(vector<pair<string, string>> &result)
+{
     cout << "Parsed JSON:" << endl
          << endl;
 
@@ -59,6 +74,4 @@ int main()
         else
             cout << key << " = " << value << endl;
     }
-
-    return 0;
 }
