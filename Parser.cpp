@@ -3,15 +3,15 @@
 
 Parser::Parser(const string &input) : text(input), pos(0) {}
 
-vector<string> Parser::parse()
+vector<pair<string, string>> Parser::parse()
 {
-    output.clear();
+    orderedPairs.clear();
     skipWhitespace();
     if (peek() == '{')
     {
-        parseObject();
+        parseObject("", 0);
     }
-    return output;
+    return orderedPairs;
 }
 
 char Parser::peek()
@@ -47,70 +47,18 @@ void Parser::skipWhitespace()
 string Parser::parseString()
 {
     string result;
-    get(); // skip opening quote
+    get();
     while (peek() != '"')
     {
         result += get();
     }
-    get(); // skip closing quote
+    get();
     return result;
-}
-
-void Parser::parseObject()
-{
-    get(); // skip '{'
-    skipWhitespace();
-
-    while (peek() != '}')
-    {
-        string key = parseString();
-        skipWhitespace();
-        get(); // skip ':'
-        skipWhitespace();
-
-        if (peek() == '"')
-        {
-            string value = parseString();
-            output.push_back(key + " = " + value);
-        }
-        else if (isdigit(peek()))
-        {
-            string num;
-            while (isdigit(peek()))
-                num += get();
-            output.push_back(key + " = " + num);
-        }
-        else if (peek() == '[')
-        {
-            output.push_back(key + " = " + parseArray());
-        }
-        else if (peek() == '{')
-        {
-            output.push_back(key + " = [Object]");
-            parseObject();
-        }
-        else
-        {
-            string literal;
-            while (isalpha(peek()))
-                literal += get();
-            output.push_back(key + " = " + literal);
-        }
-
-        skipWhitespace();
-        if (peek() == ',')
-        {
-            get(); // skip ','
-            skipWhitespace();
-        }
-    }
-
-    get(); // skip '}'
 }
 
 string Parser::parseArray()
 {
-    get(); // skip '['
+    get();
     string arrayStr = "[";
     bool first = true;
     while (peek() != ']')
@@ -130,7 +78,65 @@ string Parser::parseArray()
                 get();
         }
     }
-    get(); // skip ']'
+    get();
     arrayStr += "]";
     return arrayStr;
+}
+
+void Parser::parseObject(const string &prefix, int indentLevel)
+{
+    get();
+    skipWhitespace();
+
+    while (peek() != '}')
+    {
+        string key = parseString();
+        skipWhitespace();
+        get();
+        skipWhitespace();
+
+        string fullKey = prefix + key;
+
+        if (peek() == '"')
+        {
+            string value = parseString();
+            orderedPairs.push_back({string(indentLevel * 2, ' ') + key, value});
+        }
+        else if (isdigit(peek()) || peek() == '-')
+        {
+            string num;
+            if (peek() == '-')
+                num += get();
+            while (isdigit(peek()))
+                num += get();
+            orderedPairs.push_back({string(indentLevel * 2, ' ') + key, num});
+        }
+        else if (peek() == '[')
+        {
+            orderedPairs.push_back({string(indentLevel * 2, ' ') + key, parseArray()});
+        }
+        else if (peek() == '{')
+        {
+            orderedPairs.push_back({string(indentLevel * 2, ' ') + key + ":", ""});
+            parseObject(fullKey + ".", indentLevel + 1);
+        }
+        else
+        {
+            string literal;
+            while (isalpha(peek()))
+            {
+                literal += get();
+            }
+            orderedPairs.push_back({string(indentLevel * 2, ' ') + key, literal});
+        }
+
+        skipWhitespace();
+        if (peek() == ',')
+        {
+            get();
+            skipWhitespace();
+        }
+    }
+
+    get();
 }

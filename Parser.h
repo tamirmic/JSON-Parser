@@ -10,19 +10,19 @@ class Parser
 {
 public:
     Parser(const string &input);
-    vector<string> parse();
+    vector<pair<string, string>> parse();
 
 private:
     string text;
     size_t pos;
-    vector<string> output;
+    vector<pair<string, string>> orderedPairs;
 
     char peek();
     char get();
     void skipWhitespace();
     string parseString();
-    void parseObject();
     string parseArray();
+    void parseObject(const string &prefix, int indentLevel);
 };
 
 #endif

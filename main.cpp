@@ -1,3 +1,31 @@
+// Tamir Michaely
+// Pretty JSON implementation
+// Assumes JSON properly formatted
+/*
+Input:
+{
+  "name": "Alice",
+  "age": 30,
+  "address": {
+    "street": {
+      "name": "Main St",
+      "number": 123
+    },
+    "city": "Seattle"
+  }
+}
+
+Ouput: (Tab indented ouput)
+
+name = Alice
+age = 30
+address:
+  street:
+    name = Main St
+    number = 123
+  city = Seattle
+*/
+
 #include "Parser.h"
 #include <fstream>
 #include <iostream>
@@ -19,14 +47,17 @@ int main()
     string json = buffer.str();
 
     Parser parser(json);
-    vector<string> result = parser.parse();
+    vector<pair<string, string>> result = parser.parse();
 
-    cout << "Parsed JSON:" << endl;
-    cout << endl;
+    cout << "Parsed JSON:" << endl
+         << endl;
 
-    for (const string &line : result)
+    for (const auto &[key, value] : result)
     {
-        cout << line << endl;
+        if (!key.empty() && key.back() == ':')
+            cout << key << endl;
+        else
+            cout << key << " = " << value << endl;
     }
 
     return 0;
