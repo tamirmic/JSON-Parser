@@ -15,7 +15,7 @@ Input:
   }
 }
 
-Ouput: (Tab indented ouput)
+Output: (Tab indented ouput)
 
 name = Alice
 age = 30
