@@ -21,6 +21,9 @@ int main()
     Parser parser(json);
     vector<string> result = parser.parse();
 
+    cout << "Parsed JSON:" << endl;
+    cout << endl;
+
     for (const string &line : result)
     {
         cout << line << endl;
